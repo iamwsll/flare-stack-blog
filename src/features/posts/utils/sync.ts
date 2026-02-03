@@ -6,6 +6,8 @@ export async function calculatePostHash(post: {
   summary: string | null;
   tagIds: Array<number>;
   slug: string;
+  publishedAt: Date | string | null;
+  readTimeInMinutes: number;
 }): Promise<string> {
   const stateToHash = {
     title: post.title,
@@ -13,6 +15,11 @@ export async function calculatePostHash(post: {
     summary: post.summary,
     tagIds: [...post.tagIds].sort(),
     slug: post.slug,
+    publishedAt:
+      post.publishedAt instanceof Date
+        ? post.publishedAt.toISOString()
+        : post.publishedAt,
+    readTimeInMinutes: post.readTimeInMinutes,
   };
 
   const msgUint8 = new TextEncoder().encode(JSON.stringify(stateToHash));

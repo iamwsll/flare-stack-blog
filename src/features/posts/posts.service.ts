@@ -276,6 +276,8 @@ export async function findPostById(
       summary: post.summary,
       tagIds: post.tags.map((t) => t.id),
       slug: post.slug,
+      publishedAt: post.publishedAt,
+      readTimeInMinutes: post.readTimeInMinutes,
     });
     isSynced = dbHash === kvHash;
   }
