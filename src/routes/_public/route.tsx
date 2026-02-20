@@ -56,12 +56,7 @@ function PublicLayout() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen font-sans relative antialiased">
-      {/* --- Minimalist Background --- */}
-      <button className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03)_0%,transparent_70%)] in-[.dark]:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.02)_0%,transparent_70%)]"></div>
-      </button>
-
+    <>
       <theme.PublicLayout
         navOptions={navOptions}
         user={session?.user}
@@ -70,6 +65,7 @@ function PublicLayout() {
       >
         <Outlet />
       </theme.PublicLayout>
-    </div>
+      <theme.Toaster />
+    </>
   );
 }
