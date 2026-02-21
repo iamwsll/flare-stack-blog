@@ -9,9 +9,14 @@ export default function TableOfContents({
   headers: Array<TableOfContentsItem>;
 }) {
   const [activeIndices, setActiveIndices] = useState<Array<number>>([]);
-  // Reset active indices when headers change (e.g., during navigation)
+  const [isReady, setIsReady] = useState(false);
+
+  // Reset active indices and suppress visibility when headers change (e.g., during navigation)
   useEffect(() => {
     setActiveIndices([]);
+    setIsReady(false);
+    const timer = setTimeout(() => setIsReady(true), 600);
+    return () => clearTimeout(timer);
   }, [headers]);
 
   const [isVisible, setIsVisible] = useState(false);
@@ -181,7 +186,7 @@ export default function TableOfContents({
       ref={navRef}
       className={cn(
         "sticky top-20 self-start block w-full transition-all duration-500",
-        isVisible
+        isVisible && isReady
           ? "opacity-100 translate-y-0"
           : "opacity-0 translate-y-4 pointer-events-none",
       )}

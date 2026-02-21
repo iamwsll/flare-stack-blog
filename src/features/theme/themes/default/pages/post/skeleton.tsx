@@ -1,14 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { config } from "../../config";
 import type { PostListItem } from "@/features/posts/posts.schema";
-import {
-  featuredPostsQuery,
-  postsInfiniteQueryOptions,
-} from "@/features/posts/queries";
-
-const { featuredPostsLimit } = config.home;
+import { POSTS_KEYS } from "@/features/posts/queries";
 
 export function PostPageSkeleton() {
   const navigate = useNavigate();
@@ -16,20 +10,25 @@ export function PostPageSkeleton() {
   const queryClient = useQueryClient();
 
   // Optimistic UI: Try to get the post title from cache to verify transition immediately
-  const cachedPost =
-    // Try finding in featured posts
-    queryClient
-      .getQueryData<
-        Array<PostListItem>
-      >(featuredPostsQuery(featuredPostsLimit).queryKey)
-      ?.find((p) => p.slug === slug) ||
-    // Try finding in infinite query pages
-    queryClient
-      .getQueryData<{ pages: Array<{ items: Array<PostListItem> }> }>(
-        postsInfiniteQueryOptions({}).queryKey,
-      )
-      ?.pages.flatMap((p) => p.items)
-      .find((p) => p.slug === slug);
+  const cachedPost = queryClient
+    .getQueriesData<unknown>({ queryKey: POSTS_KEYS.all })
+    .map(([, data]) => data)
+    .filter(Boolean)
+    .flatMap((data) => {
+      // Handle regular arrays (e.g. from featuredPostsQuery)
+      if (Array.isArray(data)) {
+        return data as Array<PostListItem>;
+      }
+      // Handle infinite query pages
+      if (typeof data === "object" && data !== null && "pages" in data) {
+        const infiniteData = data as {
+          pages: Array<{ items: Array<PostListItem> }>;
+        };
+        return infiniteData.pages.flatMap((p) => p.items);
+      }
+      return [];
+    })
+    .find((p) => p.slug === slug);
 
   return (
     <div className="w-full max-w-3xl mx-auto pb-20 px-6 md:px-0">

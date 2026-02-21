@@ -44,6 +44,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
     ],
   }),
   pendingComponent: () => <theme.PostPageSkeleton />,
+  pendingMs: __THEME_CONFIG__.pendingMs,
 });
 
 function RouteComponent() {
