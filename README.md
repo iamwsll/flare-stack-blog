@@ -98,11 +98,13 @@ src/
 
 ### 主题系统
 
-Flare Stack Blog 的所有面向用户的页面与布局均通过**主题契约（Theme Contract）**与业务逻辑解耦。你可以在不修改任何路由或数据逻辑的前提下，完整替换博客的视觉表现层。
+Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约（Theme Contract）** 与业务逻辑解耦。你可以在不修改任何路由或数据逻辑的前提下，完整替换博客的视觉表现层。
 
 → **[主题开发教程](./docs/theme-guide.md)** — 了解如何从零创建你的第一个自定义主题。
 
 #### 可用主题
+
+各个主题的配置项，请前往`src/blog.config.ts`里查看
 
 <table>
   <tr>
@@ -143,6 +145,8 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过**主题契约�
 ## 部署指南
 
 请参考 **[Flare Stack Blog 部署教程](https://blog.dukda.com/post/flare-stack-blog%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)**，包含 Cloudflare 资源创建、凭证获取、GitHub OAuth 配置、两种部署方式的详细图文步骤及常见问题排查。
+
+**[视频教程](https://www.bilibili.com/video/BV1R4fnBhEs4?p=2)** 已上线
 
 ---
 
