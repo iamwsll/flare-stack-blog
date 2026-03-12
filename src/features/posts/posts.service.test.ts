@@ -1,14 +1,16 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import { env } from "cloudflare:test";
+import { eq } from "drizzle-orm";
 import {
   createAdminTestContext,
   createTestContext,
   seedUser,
   waitForBackgroundTasks,
 } from "tests/test-utils";
+import { beforeEach, describe, expect, it } from "vitest";
+import * as CacheService from "@/features/cache/cache.service";
 import * as PostService from "@/features/posts/posts.service";
 import * as TagService from "@/features/tags/tags.service";
-import * as CacheService from "@/features/cache/cache.service";
+import { PostsTable } from "@/lib/db/schema";
 import { unwrap } from "@/lib/errors";
 
 describe("PostService", () => {
@@ -84,6 +86,48 @@ describe("PostService", () => {
       expect(post).not.toBeNull();
       expect(post?.id).toBe(id);
       expect(post?.title).toBe("Public Post");
+    });
+
+    it("should backfill publicContentJson for legacy published posts on read", async () => {
+      const publicContext = createTestContext();
+      const { id } = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id,
+        data: {
+          title: "Legacy Snapshot",
+          slug: "legacy-snapshot",
+          status: "published",
+          publishedAt: new Date(),
+          contentJson: {
+            type: "doc",
+            content: [
+              {
+                type: "codeBlock",
+                attrs: { language: "ts" },
+                content: [{ type: "text", text: "const answer = 42;" }],
+              },
+            ],
+          },
+        },
+      });
+      const beforeRead = await adminContext.db.query.PostsTable.findFirst({
+        where: eq(PostsTable.id, id),
+      });
+
+      const post = await PostService.findPostBySlug(publicContext, {
+        slug: "legacy-snapshot",
+      });
+      expect(post).not.toBeNull();
+
+      await waitForBackgroundTasks(publicContext.executionCtx);
+
+      const storedPost = await adminContext.db.query.PostsTable.findFirst({
+        where: eq(PostsTable.id, id),
+      });
+      expect(storedPost?.publicContentJson).toBeTruthy();
+      expect(storedPost?.updatedAt?.getTime()).toBe(
+        beforeRead?.updatedAt?.getTime(),
+      );
     });
 
     it("should delete a post", async () => {
@@ -300,6 +344,34 @@ describe("PostService", () => {
 
       expect(result.items).toHaveLength(1);
       expect(result.items[0].title).toBe("TypeScript Post");
+    });
+
+    it("should show post whose publishedAt is today (UTC) even if stored time is later in the day", async () => {
+      const publicContext = createTestContext();
+
+      // Simulate the editor bug scenario: user selects "today" which stores as noon UTC
+      // (new Date(`${dateStr}T12:00:00Z`)), but current UTC time may be before noon.
+      // We use end-of-day to reliably ensure the stored time is "future" within today.
+      const todayUTC = new Date().toISOString().slice(0, 10);
+      const endOfTodayUTC = new Date(`${todayUTC}T23:59:59Z`);
+
+      const { id } = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id,
+        data: {
+          title: "Today Post",
+          slug: "today-post",
+          status: "published",
+          publishedAt: endOfTodayUTC,
+        },
+      });
+
+      const result = await PostService.getPostsCursor(publicContext, {});
+
+      // Should be visible because the publishedAt DATE equals today,
+      // even though the stored time (23:59:59Z) is technically in the future
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].title).toBe("Today Post");
     });
 
     it("should return empty when no posts match tag", async () => {
