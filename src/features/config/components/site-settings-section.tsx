@@ -1,4 +1,5 @@
-import { useFormContext } from "react-hook-form";
+import { useController, useFormContext } from "react-hook-form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AssetUploadField } from "@/features/config/components/asset-upload-field";
@@ -45,8 +46,14 @@ function SectionShell({
 export function SiteSettingsSection() {
   const {
     register,
+    control,
     formState: { errors },
   } = useFormContext<SystemConfig>();
+  const homePopupEnabled = useController({
+    control,
+    name: "site.homePopup.enabled",
+    defaultValue: false,
+  });
 
   const getInputClassName = (error?: string) =>
     error ? "border-destructive focus-visible:border-destructive" : undefined;
@@ -152,6 +159,69 @@ export function SiteSettingsSection() {
           label={m.settings_site_field_web_app_512()}
           error={errors.site?.icons?.webApp512?.message}
         />
+      </SectionShell>
+
+      <SectionShell
+        title={m.settings_site_section_home_popup_title()}
+        description={m.settings_site_section_home_popup_desc()}
+      >
+        <div className="md:col-span-2">
+          <label className="flex cursor-pointer items-start gap-4 border border-border/30 bg-background/40 px-5 py-4 transition-colors hover:bg-background/60">
+            <Checkbox
+              ref={homePopupEnabled.field.ref}
+              name={homePopupEnabled.field.name}
+              checked={Boolean(homePopupEnabled.field.value)}
+              onBlur={homePopupEnabled.field.onBlur}
+              onCheckedChange={homePopupEnabled.field.onChange}
+              className="mt-0.5"
+            />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                {m.settings_site_field_home_popup_enabled()}
+              </p>
+              <p className="text-xs leading-5 text-muted-foreground">
+                {m.settings_site_field_home_popup_enabled_hint()}
+              </p>
+            </div>
+          </label>
+        </div>
+        <Field
+          label={m.settings_site_field_title()}
+          error={errors.site?.homePopup?.title?.message}
+        >
+          <Input
+            {...register("site.homePopup.title")}
+            className={getInputClassName(errors.site?.homePopup?.title?.message)}
+            placeholder={m.home_popup_title()}
+          />
+        </Field>
+        <Field
+          label={m.settings_site_field_description()}
+          error={errors.site?.homePopup?.description?.message}
+        >
+          <Textarea
+            {...register("site.homePopup.description")}
+            rows={4}
+            className={getInputClassName(
+              errors.site?.homePopup?.description?.message,
+            )}
+            placeholder={m.home_popup_desc()}
+          />
+        </Field>
+        <div className="md:col-span-2">
+          <Field
+            label={m.settings_site_field_home_popup_embed_code()}
+            hint={m.settings_site_field_home_popup_embed_code_hint()}
+            error={errors.site?.homePopup?.embedCode?.message}
+          >
+            <Textarea
+              {...register("site.homePopup.embedCode")}
+              rows={6}
+              className={`min-h-40 font-mono text-xs leading-6 ${getInputClassName(errors.site?.homePopup?.embedCode?.message) ?? ""}`}
+              placeholder={m.settings_site_field_home_popup_embed_code_ph()}
+            />
+          </Field>
+        </div>
       </SectionShell>
 
       <SectionShell

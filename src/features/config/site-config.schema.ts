@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidHomePopupEmbedCode } from "@/features/home-popup/home-popup-embed";
 import type { Messages } from "@/lib/i18n";
 import { SOCIAL_PLATFORM_KEYS } from "./utils/social-platforms";
 
@@ -171,6 +172,45 @@ function createHueFormSchema(messages: Messages) {
   });
 }
 
+function createHomePopupEmbedCodeSchema() {
+  return z.string().trim().refine(isValidHomePopupEmbedCode, {
+    message: "Please paste a single valid https iframe embed code",
+  });
+}
+
+function createHomePopupEmbedCodeFormSchema(messages: Messages) {
+  return z.string().trim().refine(isValidHomePopupEmbedCode, {
+    message: messages.settings_site_validation_invalid_home_popup_embed(),
+  });
+}
+
+function createHomePopupSiteConfigSchema() {
+  return z.object({
+    enabled: z.boolean(),
+    title: createSiteTextSchema(80),
+    description: createSiteTextSchema(240),
+    embedCode: createHomePopupEmbedCodeSchema(),
+  });
+}
+
+function createHomePopupSiteConfigInputSchema() {
+  return z.object({
+    enabled: z.boolean().optional(),
+    title: createSiteTextSchema(80).optional(),
+    description: createSiteTextSchema(240).optional(),
+    embedCode: createHomePopupEmbedCodeSchema().optional(),
+  });
+}
+
+function createHomePopupSiteConfigInputFormSchema(messages: Messages) {
+  return z.object({
+    enabled: z.boolean().optional(),
+    title: createSiteTextFormSchema(80, messages).optional(),
+    description: createSiteTextFormSchema(240, messages).optional(),
+    embedCode: createHomePopupEmbedCodeFormSchema(messages).optional(),
+  });
+}
+
 function createDefaultThemeBackgroundSchema() {
   return z.object({
     homeImage: createBackgroundImageRefSchema(),
@@ -274,6 +314,9 @@ export const defaultThemeBackgroundSchema =
   createDefaultThemeBackgroundSchema();
 export const defaultThemeBackgroundInputSchema =
   createDefaultThemeBackgroundInputSchema();
+export const homePopupSiteConfigSchema = createHomePopupSiteConfigSchema();
+export const homePopupSiteConfigInputSchema =
+  createHomePopupSiteConfigInputSchema();
 export const defaultThemeSiteConfigSchema =
   createDefaultThemeSiteConfigSchema();
 export const defaultThemeSiteConfigInputSchema =
@@ -287,6 +330,7 @@ export const FullSiteConfigSchema = z.object({
   author: createSiteTextSchema(80),
   description: createSiteTextSchema(300),
   social: z.array(SocialLinkSchema),
+  homePopup: homePopupSiteConfigSchema,
   icons: z.object({
     faviconSvg: createAssetPathSchema(),
     faviconIco: createAssetPathSchema(),
@@ -307,6 +351,7 @@ export function createSiteConfigInputFormSchema(messages: Messages) {
     author: createSiteTextFormSchema(80, messages).optional(),
     description: createSiteTextFormSchema(300, messages).optional(),
     social: z.array(SocialLinkSchema).optional(),
+    homePopup: createHomePopupSiteConfigInputFormSchema(messages).optional(),
     icons: z
       .object({
         faviconSvg: createOptionalAssetPathFormSchema(messages).optional(),
@@ -332,6 +377,7 @@ export const SiteConfigInputSchema = z.object({
   author: createSiteTextSchema(80).optional(),
   description: createSiteTextSchema(300).optional(),
   social: z.array(SocialLinkSchema).optional(),
+  homePopup: homePopupSiteConfigInputSchema.optional(),
   icons: z
     .object({
       faviconSvg: createOptionalAssetPathSchema().optional(),
@@ -357,6 +403,10 @@ export type DefaultThemeSiteConfig = z.infer<
 >;
 export type DefaultThemeBackground = z.infer<
   typeof defaultThemeBackgroundSchema
+>;
+export type HomePopupSiteConfig = z.infer<typeof homePopupSiteConfigSchema>;
+export type HomePopupSiteConfigInput = z.infer<
+  typeof homePopupSiteConfigInputSchema
 >;
 export type DefaultThemeSiteConfigInput = z.infer<
   typeof defaultThemeSiteConfigInputSchema

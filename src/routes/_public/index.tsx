@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import theme from "@theme";
+import { HomePopup } from "@theme/components/home-popup";
 import { siteDomainQuery } from "@/features/config/queries";
 import {
   pinnedPostsQuery,
@@ -39,11 +40,14 @@ function HomeRoute() {
   );
 
   return (
-    <theme.HomePage
-      posts={posts}
-      pinnedPosts={pinnedPosts}
-      popularPosts={popularPosts}
-    />
+    <>
+      <HomePopup />
+      <theme.HomePage
+        posts={posts}
+        pinnedPosts={pinnedPosts}
+        popularPosts={popularPosts}
+      />
+    </>
   );
 }
 

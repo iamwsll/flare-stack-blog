@@ -10,6 +10,12 @@ export const blogConfig = {
     { platform: "email", url: "mailto:example@email.com" },
     { platform: "rss", url: "/rss.xml" },
   ],
+  homePopup: {
+    enabled: false,
+    title: "精选页面",
+    description: "这里展示后台配置的嵌入页面，并会在打开首页时自动弹出。",
+    embedCode: "",
+  },
   icons: {
     faviconSvg: "/favicon.svg",
     faviconIco: "/favicon.ico",
