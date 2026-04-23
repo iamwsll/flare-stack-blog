@@ -91,6 +91,16 @@ export function resolveSiteConfig(
     author: config?.site?.author ?? blogConfig.author,
     description: config?.site?.description ?? blogConfig.description,
     social: migrateSocial(config?.site?.social),
+    homePopup: {
+      enabled:
+        config?.site?.homePopup?.enabled ?? blogConfig.homePopup.enabled,
+      title: config?.site?.homePopup?.title ?? blogConfig.homePopup.title,
+      description:
+        config?.site?.homePopup?.description ??
+        blogConfig.homePopup.description,
+      embedCode:
+        config?.site?.homePopup?.embedCode ?? blogConfig.homePopup.embedCode,
+    },
     icons: {
       faviconSvg:
         config?.site?.icons?.faviconSvg || blogConfig.icons.faviconSvg,
