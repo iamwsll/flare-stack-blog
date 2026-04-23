@@ -1,3 +1,5 @@
+import type { IframeHTMLAttributes } from "react";
+
 const IFRAME_SELF_CLOSING_RE = /^<iframe\b([\s\S]*?)\/>\s*$/i;
 const IFRAME_STANDARD_RE = /^<iframe\b([\s\S]*?)>\s*<\/iframe>\s*$/i;
 const ATTRIBUTE_RE =
@@ -6,6 +8,20 @@ const ATTRIBUTE_RE =
 export const HOME_POPUP_DEFAULT_HEIGHT = 600;
 export const HOME_POPUP_MIN_HEIGHT = 320;
 export const HOME_POPUP_MAX_HEIGHT = 900;
+type HomePopupReferrerPolicy = NonNullable<
+  IframeHTMLAttributes<HTMLIFrameElement>["referrerPolicy"]
+>;
+
+const HOME_POPUP_REFERRER_POLICIES = new Set<HomePopupReferrerPolicy>([
+  "no-referrer",
+  "no-referrer-when-downgrade",
+  "origin",
+  "origin-when-cross-origin",
+  "same-origin",
+  "strict-origin",
+  "strict-origin-when-cross-origin",
+  "unsafe-url",
+]);
 
 export interface HomePopupEmbed {
   src: string;
@@ -13,7 +29,7 @@ export interface HomePopupEmbed {
   allow?: string;
   allowFullScreen: boolean;
   loading: "lazy" | "eager";
-  referrerPolicy?: string;
+  referrerPolicy?: HomePopupReferrerPolicy;
 }
 
 function extractAttributeSource(embedCode: string) {
@@ -60,6 +76,20 @@ function normalizeHeight(value: string | boolean | undefined) {
   if (!match) return HOME_POPUP_DEFAULT_HEIGHT;
 
   return Number(match[1]);
+}
+
+function normalizeReferrerPolicy(
+  value: string | boolean | undefined,
+): HomePopupReferrerPolicy | undefined {
+  if (typeof value !== "string") return undefined;
+
+  const normalized = value.trim().toLowerCase();
+
+  if (!HOME_POPUP_REFERRER_POLICIES.has(normalized as HomePopupReferrerPolicy)) {
+    return undefined;
+  }
+
+  return normalized as HomePopupReferrerPolicy;
 }
 
 export function clampHomePopupHeight(height: number) {
@@ -111,11 +141,7 @@ export function parseHomePopupEmbedCode(
       loadingValue.trim().toLowerCase() === "eager"
         ? "eager"
         : "lazy",
-    referrerPolicy:
-      typeof referrerPolicyValue === "string" &&
-      referrerPolicyValue.trim() !== ""
-        ? referrerPolicyValue.trim()
-        : undefined,
+    referrerPolicy: normalizeReferrerPolicy(referrerPolicyValue),
   };
 }
 
