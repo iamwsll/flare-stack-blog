@@ -24,6 +24,7 @@ import type {
   AdminTaxonomyFilter,
   PostItem,
 } from "@/features/posts/schema/posts.schema";
+import { HOME_POSTS_PER_PAGE } from "@/features/posts/schema/posts.schema";
 import { isPostBodyEmpty } from "@/features/posts/utils/is-post-body-empty";
 import type { PostStatus, PublicPostSnapshot } from "@/lib/db/schema";
 import {
@@ -299,6 +300,30 @@ export async function getPostsCursor(
   const nextCursor = hasMore ? (items[items.length - 1]?.id ?? null) : null;
 
   return { items, nextCursor };
+}
+
+export async function getHomePosts(db: DB, requestedPage: number) {
+  const total = await getPostsCount(db, { publicOnly: true });
+  const totalPages = Math.max(1, Math.ceil(total / HOME_POSTS_PER_PAGE));
+  const page = Math.min(requestedPage, totalPages);
+  const rows = await db
+    .select({
+      id: PostsTable.id,
+      status: PostsTable.status,
+      createdAt: PostsTable.createdAt,
+      updatedAt: PostsTable.updatedAt,
+      publicSnapshotJson: PostsTable.publicSnapshotJson,
+    })
+    .from(PostsTable)
+    .where(buildPostWhereClause({ publicOnly: true }))
+    .orderBy(
+      desc(snapshotPinnedAt),
+      desc(snapshotPublishedAt),
+      desc(PostsTable.id),
+    )
+    .limit(HOME_POSTS_PER_PAGE)
+    .offset((page - 1) * HOME_POSTS_PER_PAGE);
+  return { items: await hydratePublicPosts(db, rows), page, totalPages };
 }
 
 export async function getPublishedPostsForSitemapBatch(

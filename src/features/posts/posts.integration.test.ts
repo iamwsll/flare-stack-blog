@@ -45,6 +45,76 @@ describe("Posts Integration", () => {
     return id;
   };
 
+  describe("Homepage pagination", () => {
+    it("paginates public snapshots with pinned posts first and no duplicate or private posts", async () => {
+      const publishedAt = "2026-01-01T00:00:00.000Z";
+      const rows = await adminContext.db
+        .insert(PostsTable)
+        .values(
+          Array.from({ length: 18 }, (_, i) => ({
+            title: `Private edit ${i}`,
+            slug: `private-edit-${i}`,
+            status: "published" as const,
+            publicSlug: `home-${i}`,
+            publicSnapshotJson: {
+              title: `Public ${i}`,
+              summary: null,
+              slug: `home-${i}`,
+              contentJson: null,
+              tagIds: [],
+              categoryId: null,
+              cover: null,
+              publishedAt,
+              pinnedAt: i < 9 ? "2026-02-01T00:00:00.000Z" : null,
+            },
+          })),
+        )
+        .returning();
+      await adminContext.db
+        .insert(PostsTable)
+        .values({ title: "Hidden draft", slug: "hidden-draft" });
+      const pages = [];
+      for (const page of [1, 2, 3])
+        pages.push(await PostService.getHomePosts(adminContext, page));
+      expect(pages.map((result) => result.items.length)).toEqual([8, 8, 2]);
+      expect(pages.map((result) => result.totalPages)).toEqual([3, 3, 3]);
+      const items = pages.flatMap((result) => result.items);
+      expect(items.map((item) => item.id)).toEqual([
+        ...rows
+          .slice(0, 9)
+          .reverse()
+          .map((row) => row.id),
+        ...rows
+          .slice(9)
+          .reverse()
+          .map((row) => row.id),
+      ]);
+      expect(items.every((item) => item.title.startsWith("Public "))).toBe(
+        true,
+      );
+      expect(new Set(items.map((item) => item.id)).size).toBe(18);
+      expect((await PostService.getHomePosts(adminContext, 999)).page).toBe(3);
+      await adminContext.db
+        .update(PostsTable)
+        .set({ publicSnapshotJson: null, publicSlug: null })
+        .where(eq(PostsTable.id, rows[8].id));
+      await waitForBackgroundTasks(adminContext.executionCtx);
+      await invalidate.postPublished(adminContext, { slug: "home-8" });
+      const refreshed = await PostService.getHomePosts(adminContext, 1);
+      expect(refreshed.items.some((item) => item.id === rows[8].id)).toBe(
+        false,
+      );
+    });
+
+    it("returns an empty first page for a site without published posts", async () => {
+      expect(await PostService.getHomePosts(adminContext, 5)).toEqual({
+        items: [],
+        page: 1,
+        totalPages: 1,
+      });
+    });
+  });
+
   describe("Post CRUD", () => {
     it("should create an empty draft post", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);

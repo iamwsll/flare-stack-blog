@@ -12,6 +12,18 @@
         }
       }
     },
+    "home": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/home/page",
+          "summary": "List homepage posts, pinned first",
+          "tags": ["Posts"]
+        }
+      }
+    },
     "bySlug": {
       "~orpc": {
         "errorMap": {},

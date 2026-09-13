@@ -54,6 +54,15 @@ export const PostListResponseSchema = z.object({
   items: z.array(PostItemSchema),
   nextCursor: z.number().nullable(),
 });
+export const HOME_POSTS_PER_PAGE = 8;
+export const HomePostsInputSchema = z.object({
+  page: z.number().int().min(1).max(1_000_000).default(1),
+});
+export const HomePostsResponseSchema = z.object({
+  items: z.array(PostItemSchema),
+  page: z.number().int().positive(),
+  totalPages: z.number().int().positive(),
+});
 export const PostWithTocSchema = PostSelectSchema.omit({
   publicSlug: true,
   coverMediaId: true,

@@ -8,6 +8,15 @@ import {
 } from "./workers-cache-policy";
 
 describe("workersCacheKey", () => {
+  it("separates homepage pages while ignoring tracking parameters", () => {
+    expect(workersCacheKey("https://blog.example/?page=2&utm_source=x")).toBe(
+      "/?page=2",
+    );
+    expect(workersCacheKey("https://blog.example/?page=3")).toBe("/?page=3");
+    expect(workersCacheKey("https://blog.example/?page=1")).toBe("/");
+    expect(workersCacheKey("https://blog.example/?page=%222%22")).not.toBe("/");
+  });
+
   it("keeps only tagName on the posts list", () => {
     expect(
       workersCacheKey("https://blog.example/posts?tagName=rust&utm_source=x"),

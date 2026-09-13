@@ -2,6 +2,7 @@ import { defineEntry } from "@/features/cache/public-cache";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import {
   PostItemSchema,
+  HomePostsResponseSchema,
   PostListResponseSchema,
   PostWithTocSchema,
 } from "@/features/posts/schema/posts.schema";
@@ -15,6 +16,16 @@ const POST_PUBLIC_REASONS = [
   "tag.changed",
   "category.changed",
 ] as const;
+
+export const homePosts = defineEntry({
+  name: "posts.home",
+  namespace: "posts:home",
+  key: ({ page }: { page: number }) => ["posts", "home", page],
+  schema: HomePostsResponseSchema,
+  ttl: "7d",
+  invalidatedBy: POST_PUBLIC_REASONS,
+  load: (context, { page }) => PostRepo.getHomePosts(context.db, page),
+});
 
 export const pinnedPosts = defineEntry({
   name: "posts.pinned",

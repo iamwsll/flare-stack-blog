@@ -36,6 +36,12 @@ function postCacheTag(slug: string): string {
 export function workersCacheKey(url: string | URL): string {
   const parsed = typeof url === "string" ? new URL(url) : url;
   const pathname = parsed.pathname;
+  if (pathname === "/") {
+    const page = parsed.searchParams.get("page");
+    return page && page !== "1"
+      ? `/?${new URLSearchParams({ page })}`
+      : pathname;
+  }
   if (normalizePathname(pathname) === "/posts") {
     const params = new URLSearchParams();
     const tagName = parsed.searchParams.get("tagName");

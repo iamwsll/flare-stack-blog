@@ -5,11 +5,8 @@ import {
 } from "@/features/posts/schema/posts.schema";
 import { orpc } from "@/lib/orpc";
 
-export function recentPostsQuery(limit: number) {
-  return orpc.posts.list.queryOptions({
-    input: { limit },
-    select: (data) => data.items,
-  });
+export function homePostsQuery(page: number) {
+  return orpc.posts.home.queryOptions({ input: { page } });
 }
 
 export function postsInfiniteQueryOptions(
@@ -64,8 +61,6 @@ export function postRevisionDetailQuery(postId: number, revisionId: number) {
     input: { postId, revisionId },
   });
 }
-
-export const pinnedPostsQuery = orpc.posts.pinned.queryOptions();
 
 export function popularPostsQuery(limit?: number) {
   return orpc.posts.popular.queryOptions({ input: { limit } });

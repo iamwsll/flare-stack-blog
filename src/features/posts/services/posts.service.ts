@@ -6,6 +6,7 @@ import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import {
   pinnedPosts,
+  homePosts,
   postBySlug,
   postsList,
 } from "@/features/posts/posts.cache";
@@ -142,6 +143,13 @@ async function createPublishRevision(
       coverMediaId: post.coverMediaId ?? null,
     },
   });
+}
+
+export function getHomePosts(
+  context: DbContext & { executionCtx: ExecutionContext },
+  page: number,
+) {
+  return homePosts.get(context, { page });
 }
 
 export async function getPinnedPosts(

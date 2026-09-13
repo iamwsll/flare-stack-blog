@@ -1,6 +1,8 @@
 import { z } from "zod";
 import {
   AdminPostListPageSchema,
+  HomePostsInputSchema,
+  HomePostsResponseSchema,
   DeletePostInputSchema,
   FindPostByIdInputSchema,
   AdjacentPostsSchema,
@@ -61,6 +63,26 @@ const list = publicProcedure
   .output(PostListResponseSchema)
   .handler(async ({ context, input }) => {
     const result = await PostService.getPostsCursor(context, input);
+    return {
+      ...result,
+      items: await postPopularityService.attachViewCounts(
+        context,
+        result.items,
+      ),
+    };
+  });
+
+const home = publicProcedure
+  .route({
+    method: "GET",
+    path: "/posts/home/page",
+    summary: "List homepage posts, pinned first",
+    tags: ["Posts"],
+  })
+  .input(HomePostsInputSchema)
+  .output(HomePostsResponseSchema)
+  .handler(async ({ context, input }) => {
+    const result = await PostService.getHomePosts(context, input.page);
     return {
       ...result,
       items: await postPopularityService.attachViewCounts(
@@ -325,6 +347,7 @@ const deleteRevisions = adminProcedure
 
 export default {
   list,
+  home,
   bySlug,
   adjacent,
   pinned,
