@@ -1,13 +1,5 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "home_popup_title": "精选页面",
-  "home_popup_close": "关闭弹窗",
-  "settings_site_section_home_popup_title": "首页弹窗",
-  "settings_site_field_home_popup_enabled": "启用首页弹窗",
-  "settings_site_field_home_popup_embed_code": "嵌入 iframe 代码",
-  "settings_site_field_home_popup_embed_code_hint": "只支持单个 https iframe 片段，例如：<iframe src=\"https://...\" width=\"100%\" height=\"600\" frameborder=\"0\" allowfullscreen></iframe>",
-  "settings_site_validation_invalid_home_popup_embed": "请输入单个有效的 https iframe 嵌入代码",
-  "home_popup_desc": "弹窗说明",
   "nav_home": "主页",
   "nav_posts": "文章",
   "nav_friend_links": "友链",
