@@ -140,6 +140,10 @@ export function resolveSiteConfig(
     description: config?.site?.description ?? blogConfig.description,
     social: migrateSocial(config?.site?.social),
     navLinks: normalizeNavLinks(config?.site?.navLinks),
+    homePopup: {
+      ...blogConfig.homePopup,
+      ...config?.site?.homePopup,
+    },
     icons: {
       faviconSvg: resolveFaviconSvg(config?.site?.icons),
       favicon96: config?.site?.icons?.favicon96 || blogConfig.icons.favicon96,
