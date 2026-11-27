@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidHomePopupEmbedCode } from "@/features/home-popup/home-popup-embed";
 import { DEFAULT_THEME_ID, THEME_IDS } from "@/features/theme/theme-ids";
 import { m } from "@/paraglide/messages";
 import {
@@ -347,12 +348,27 @@ function createLegacyFuwariSchema() {
     );
 }
 
+const HomePopupEmbedSchema = z
+  .string()
+  .trim()
+  .refine(isValidHomePopupEmbedCode, {
+    message: "Please paste a single valid HTTPS iframe embed code",
+  });
+const HomePopupSchema = z.object({
+  enabled: z.boolean(),
+  title: createSiteTextSchema(80),
+  description: createSiteTextSchema(240),
+  embedCode: HomePopupEmbedSchema,
+});
+const HomePopupInputSchema = HomePopupSchema.partial();
+
 export const FullSiteConfigSchema = z.object({
   title: createSiteTextSchema(120),
   author: createSiteTextSchema(80),
   description: createSiteTextSchema(SITE_DESCRIPTION_MAX),
   social: z.array(SocialLinkSchema),
   navLinks: z.array(NavLinkSchema).max(NAV_LINKS_MAX),
+  homePopup: HomePopupSchema,
   icons: z.object({
     // Empty when an uploaded raster icon has no SVG beside it, so the tab
     // shows the uploaded icon rather than the default vector one.
@@ -382,6 +398,20 @@ export function createSiteConfigInputFormSchema() {
     description: createSiteTextFormSchema(SITE_DESCRIPTION_MAX).optional(),
     social: z.array(SocialLinkSchema).optional(),
     navLinks: createNavLinksFormSchema().optional(),
+    homePopup: z
+      .object({
+        enabled: z.boolean().optional(),
+        title: createSiteTextFormSchema(80).optional(),
+        description: createSiteTextFormSchema(240).optional(),
+        embedCode: z
+          .string()
+          .trim()
+          .refine(isValidHomePopupEmbedCode, {
+            message: m.settings_site_validation_invalid_home_popup_embed(),
+          })
+          .optional(),
+      })
+      .optional(),
     icons: z
       .object({
         faviconSvg: createOptionalAssetPathFormSchema().optional(),
@@ -412,6 +442,7 @@ export const SiteConfigInputSchema = z.object({
   author: createSiteTextSchema(80).optional(),
   description: createSiteTextSchema(SITE_DESCRIPTION_MAX).optional(),
   social: z.array(SocialLinkSchema).optional(),
+  homePopup: HomePopupInputSchema.optional(),
   navLinks: z
     .array(NavLinkInputSchema)
     .max(NAV_LINKS_MAX)
@@ -443,5 +474,6 @@ export const SiteConfigInputSchema = z.object({
     .optional(),
 });
 
+export type HomePopupSiteConfig = z.infer<typeof HomePopupSchema>;
 export type SiteConfig = z.infer<typeof FullSiteConfigSchema>;
 export type SiteConfigInput = z.infer<typeof SiteConfigInputSchema>;

@@ -1,13 +1,19 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { ArrowRight, ExternalLink, Link2, Plus, Trash2 } from "lucide-react";
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  useFormContext,
+  useWatch,
+} from "react-hook-form";
 import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
 import { Button, buttonClass } from "@/components/ui/button";
 import { DragHandle } from "@/components/ui/drag-handle";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
 import { previewSrc } from "@/features/config/components/admin/preview-src";
 import type { SystemConfig } from "@/features/config/config.schema";
@@ -41,6 +47,9 @@ export function SiteStudio() {
         <SocialLinksEditor />
         <NavLinksEditor />
       </AdminFormSection>
+      <AdminFormSection title={m.settings_site_section_home_popup_title()}>
+        <HomePopupFields />
+      </AdminFormSection>
       <p className="site-moved-hint">
         {m.settings_site_moved_to_personalize()}
         <Link
@@ -52,6 +61,65 @@ export function SiteStudio() {
         </Link>
       </p>
     </div>
+  );
+}
+
+function HomePopupFields() {
+  const { control, register, formState } = useFormContext<SystemConfig>();
+  const errors = formState.errors.site?.homePopup;
+  return (
+    <>
+      <SettingRow label={m.settings_site_field_home_popup_enabled()}>
+        {(field) => (
+          <Controller
+            name="site.homePopup.enabled"
+            control={control}
+            render={({ field: popupEnabled }) => (
+              <Switch
+                {...field}
+                checked={popupEnabled.value ?? false}
+                onCheckedChange={popupEnabled.onChange}
+              />
+            )}
+          />
+        )}
+      </SettingRow>
+      <SettingRow label={m.home_popup_title()} error={errors?.title?.message}>
+        {(field) => (
+          <Input
+            {...register("site.homePopup.title")}
+            {...field}
+            maxLength={80}
+          />
+        )}
+      </SettingRow>
+      <SettingRow
+        label={m.home_popup_desc()}
+        error={errors?.description?.message}
+      >
+        {(field) => (
+          <Textarea
+            {...register("site.homePopup.description")}
+            {...field}
+            maxLength={240}
+            rows={2}
+          />
+        )}
+      </SettingRow>
+      <SettingRow
+        label={m.settings_site_field_home_popup_embed_code()}
+        description={m.settings_site_field_home_popup_embed_code_hint()}
+        error={errors?.embedCode?.message}
+      >
+        {(field) => (
+          <Textarea
+            {...register("site.homePopup.embedCode")}
+            {...field}
+            rows={3}
+          />
+        )}
+      </SettingRow>
+    </>
   );
 }
 

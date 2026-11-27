@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { getHomeBackgroundPreloadImages } from "@/components/layout/preload-images";
 import { siteDomainQuery } from "@/features/config/queries";
+import { HomePopup } from "@/features/home-popup/home-popup";
 import { latestMomentsQuery } from "@/features/moments/queries";
 import {
   HomePage,
@@ -60,11 +61,14 @@ function HomeRoute() {
     popularPostsQuery(POPULAR_POSTS_LIMIT),
   );
   return (
-    <HomePage
-      posts={data.items}
-      popularPosts={popularPosts}
-      page={data.page}
-      totalPages={data.totalPages}
-    />
+    <>
+      <HomePopup />
+      <HomePage
+        posts={data.items}
+        popularPosts={popularPosts}
+        page={data.page}
+        totalPages={data.totalPages}
+      />
+    </>
   );
 }
