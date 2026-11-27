@@ -11,12 +11,6 @@ export const blogConfig = {
     { platform: "rss", url: "/rss.xml" },
   ],
   navLinks: [],
-  homePopup: {
-    enabled: false,
-    title: "精选页面",
-    description: "这里展示后台配置的嵌入页面，并会在打开首页时自动弹出。",
-    embedCode: "",
-  },
   icons: {
     faviconSvg: "/favicon.svg",
     favicon96: "/favicon-96x96.png",
